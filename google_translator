@@ -1,0 +1,95 @@
+from tkinter import *
+from tkinter import ttk, messagebox
+from googletrans import Translator, LANGUAGES
+
+# Initialize the main window
+root = Tk()
+root.title("Google Translator")
+root.geometry("1000x400")
+
+# Initialize the Google Translator
+translator = Translator()
+
+# Fetch available languages
+language = LANGUAGES
+languagev = list(language.values())
+language_codes = {name.capitalize(): code for code, name in language.items()}  # Adjust to capitalize the language names
+
+# Create and place combo boxes for language selection
+combo1 = ttk.Combobox(root, values=languagev, font="Roboto 14", state="readonly")
+combo1.place(x=110, y=20)
+combo1.set("English")
+
+combo2 = ttk.Combobox(root, values=languagev, font="Roboto 14", state="readonly")
+combo2.place(x=730, y=20)
+combo2.set("Select Language")
+
+# Create labels for the language sections
+label1 = Label(root, text="ENGLISH", font="Segoe 30 bold", bg="white", width=18, bd=5, relief=GROOVE)
+label1.place(x=10, y=50)
+
+label2 = Label(root, text="SELECT LANGUAGE", font="Segoe 30 bold", bg="white", width=18, bd=5, relief=GROOVE)
+label2.place(x=620, y=50)
+
+# Create frames for text areas
+f = Frame(root, bg="Black", bd=5)
+f.place(x=10, y=110, width=440, height=210)
+
+f1 = Frame(root, bg="Black", bd=5)
+f1.place(x=620, y=110, width=440, height=210)
+
+# Create text widgets with scrollbars
+text1 = Text(f, font="Roboto 20", bg="white", relief=GROOVE, wrap=WORD)
+text1.place(x=0, y=0, width=430, height=200)
+
+Scrollbar1 = Scrollbar(f)
+Scrollbar1.pack(side="right", fill="y")
+Scrollbar1.configure(command=text1.yview)
+text1.configure(yscrollcommand=Scrollbar1.set)
+
+text2 = Text(f1, font="Roboto 20", bg="white", relief=GROOVE, wrap=WORD)
+text2.place(x=0, y=0, width=430, height=200)
+
+Scrollbar2 = Scrollbar(f1)
+Scrollbar2.pack(side="right", fill="y")
+Scrollbar2.configure(command=text2.yview)
+text2.configure(yscrollcommand=Scrollbar2.set)
+
+# Function to update labels based on selected languages
+def update_labels(event=None):
+    label1.config(text=combo1.get().upper())
+    label2.config(text=combo2.get().upper())
+
+# Function to translate text
+def translate_now():
+    try:
+        text = text1.get("1.0", "end-1c").strip()  # Get text from text1 and strip whitespace
+        src_lang = language_codes.get(combo1.get().capitalize())
+        dest_lang = language_codes.get(combo2.get().capitalize())
+
+        if not src_lang or not dest_lang:
+            messagebox.showerror("Error", "Selected languages are not valid.")
+            return
+        
+        if text:
+            # Translate the text
+            translated = translator.translate(text, src=src_lang, dest=dest_lang)
+            # Clear and insert translated text into text2
+            text2.delete("1.0", "end")
+            text2.insert("end", translated.text)
+    except Exception as e:
+        messagebox.showerror("Error", f"Translation failed: {e}")
+
+# Bind comboboxes to update labels when selection changes
+combo1.bind("<<ComboboxSelected>>", update_labels)
+combo2.bind("<<ComboboxSelected>>", update_labels)
+
+# Create and place the translate button
+translate_button = Button(root, text="Translate", font="Roboto 15 bold", pady=5, command=translate_now)
+translate_button.place(x=480, y=250)
+
+# Initialize labels with the current selection
+update_labels()
+
+# Start the main event loop
+root.mainloop()
